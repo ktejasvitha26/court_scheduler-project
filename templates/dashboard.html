@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 <head>
 <title>Dashboard</title>
@@ -12,32 +13,35 @@
 <h2>Court Hearing Dashboard</h2>
 
 <!-- TOP BAR -->
+
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
 
-    <div>
-        <a href="/add_case">Add Case</a>
-        <a href="/schedule">Schedule Hearing</a>
-    </div>
+```
+<div>
+    <a href="/add_case">Add Case</a>
+    <a href="/schedule">Schedule Hearing</a>
+</div>
 
-    <div>
-        <a href="/logout">Logout</a>
-    </div>
+<div>
+    <a href="/logout">Logout</a>
+</div>
+```
 
 </div>
 
-<!-- SUCCESS MESSAGE -->
+<!-- ✅ SUCCESS MESSAGE (FINAL FIXED) -->
+
 {% if msg %}
-<p style="color:green; font-size:18px;">
-    {% if "case_added" in msg %}
-        ✅ Case Added Successfully
-    {% elif "hearing_scheduled" in msg %}
-        ✅ Hearing Scheduled & Email Sent Successfully
-    {% endif %}
-</p>
+
+<div style="background:#d4edda; padding:10px; color:#155724; border-radius:5px; margin-bottom:15px;">
+    {{ msg }}
+</div>
 {% endif %}
 
 <!-- TABLE -->
-<table>
+
+<table border="1" cellpadding="10" cellspacing="0" width="100%">
+
 <tr>
 <th>ID</th>
 <th>Case</th>
@@ -47,18 +51,30 @@
 <th>Status</th>
 <th>Next Date</th>
 <th>Next Time</th>
+<th>Action</th>
 </tr>
 
 {% for h in hearings %}
+
 <tr>
-<td>{{h[0]}}</td>
-<td>{{h[1]}}</td>
-<td>{{h[2]}}</td>
-<td>{{h[3]}}</td>
-<td>{{h[4]}}</td>
-<td>{{h[5]}}</td>
-<td>{{h[6]}}</td>
-<td>{{h[7]}}</td>
+
+<td>{{ h[0] }}</td>
+<td>{{ h[1] }}</td>
+<td>{{ h[2] }}</td>
+<td>{{ h[3] }}</td>
+<td>{{ h[4] }}</td>
+<td>{{ h[5] }}</td>
+<td>{{ h[6] }}</td>
+<td>{{ h[7] }}</td>
+
+<td>
+    <a href="/delete/{{ h[0] }}"
+       style="color:red; font-weight:bold;"
+       onclick="return confirm('Are you sure you want to delete this record?')">
+       Delete
+    </a>
+</td>
+
 </tr>
 {% endfor %}
 
