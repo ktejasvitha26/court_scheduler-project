@@ -3,6 +3,7 @@ import sqlite3
 import smtplib
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
+import random   # ✅ ADDED
 
 app = Flask(__name__)
 app.secret_key = "secret_key"
@@ -43,123 +44,49 @@ def create_tables():
     db.close()
 
 
+# ✅ AI-LIKE PREDICTION
 def predict_delay(case_type, total):
-    if total >= 3 or case_type.lower() == "criminal":
+
+    score = 0
+
+    # Case type impact
+    if case_type.lower() == "criminal":
+        score += 3
+    else:
+        score += 1
+
+    # Workload impact
+    if total > 5:
+        score += 3
+    elif total > 2:
+        score += 2
+    else:
+        score += 1
+
+    # Random factor
+    score += random.randint(0, 2)
+
+    # Final decision
+    if score >= 6:
         return "Delayed"
-    return "On Time"
+    else:
+        return "On Time"
 
 
-# ✅ FULL MULTI-LANGUAGE PROFESSIONAL EMAIL
+# ✅ EMAIL FUNCTION
 def send_email(to_email, case_id, judge, date, time, status, next_date, next_time, language):
 
-    lang = language.lower()
-
-    if lang == "hindi":
-        subject = "अदालत सुनवाई सूचना"
-        body = f"""
-प्रिय ग्राहक,
-
-आपकी अदालत की सुनवाई निर्धारित की गई है।
-
-केस आईडी: {case_id}
-न्यायाधीश: {judge}
-
-मूल तारीख: {date}
-मूल समय: {time}
-
-स्थिति: {status}
-
-नई सुनवाई:
-नई तारीख: {next_date}
-नया समय: {next_time}
-
-कृपया समय पर उपस्थित रहें।
-
-सादर,
-कोर्ट शेड्यूलिंग सिस्टम
-"""
-
-    elif lang == "kannada":
-        subject = "ನ್ಯಾಯಾಲಯ ವಿಚಾರಣೆ ಮಾಹಿತಿ"
-        body = f"""
-ಪ್ರಿಯ ಗ್ರಾಹಕರೇ,
-
-ನಿಮ್ಮ ನ್ಯಾಯಾಲಯ ವಿಚಾರಣೆ ನಿಗದಿಯಾಗಿದೆ.
-
-ಕೇಸ್ ಐಡಿ: {case_id}
-ನ್ಯಾಯಾಧೀಶ: {judge}
-
-ಮೂಲ ದಿನಾಂಕ: {date}
-ಮೂಲ ಸಮಯ: {time}
-
-ಸ್ಥಿತಿ: {status}
-
-ಹೊಸ ವಿಚಾರಣೆ:
-ಹೊಸ ದಿನಾಂಕ: {next_date}
-ಹೊಸ ಸಮಯ: {next_time}
-
-ದಯವಿಟ್ಟು ಸಮಯಕ್ಕೆ ಬನ್ನಿ.
-
-ಧನ್ಯವಾದಗಳು,
-ಕೋರ್ಟ್ ಶೆಡ್ಯೂಲಿಂಗ್ ಸಿಸ್ಟಮ್
-"""
-
-    elif lang == "telugu":
-        subject = "కోర్టు విచారణ సమాచారం"
-        body = f"""
-ప్రియమైన వినియోగదారుడు,
-
-మీ కోర్టు విచారణ షెడ్యూల్ చేయబడింది.
-
-కేసు ఐడి: {case_id}
-న్యాయమూర్తి: {judge}
-
-మూల తేదీ: {date}
-మూల సమయం: {time}
-
-స్థితి: {status}
-
-కొత్త విచారణ:
-కొత్త తేదీ: {next_date}
-కొత్త సమయం: {next_time}
-
-దయచేసి సమయానికి హాజరుకండి.
-
-ధన్యవాదాలు,
-కోర్టు షెడ్యూలింగ్ సిస్టమ్
-"""
-
-    elif lang == "tamil":
-        subject = "நீதிமன்ற விசாரணை தகவல்"
-        body = f"""
-அன்பார்ந்த பயனர்,
-
-உங்கள் நீதிமன்ற விசாரணை திட்டமிடப்பட்டுள்ளது.
-
-வழக்கு ஐடி: {case_id}
-நீதிபதி: {judge}
-
-மூல தேதி: {date}
-மூல நேரம்: {time}
-
-நிலை: {status}
-
-புதிய விசாரணை:
-புதிய தேதி: {next_date}
-புதிய நேரம்: {next_time}
-
-தயவுசெய்து நேரத்திற்கு வருக.
-
-நன்றி,
-நீதிமன்ற திட்ட அமைப்பு
-"""
-
+    if status == "Delayed":
+        subject = "⚠️ Court Hearing Rescheduled"
     else:
-        subject = "Court Hearing Notification"
-        body = f"""
+        subject = "✅ Court Hearing Confirmed"
+
+    if language.lower() == "english":
+        if status == "Delayed":
+            body = f"""
 Dear Client,
 
-Your court hearing has been scheduled.
+⚠️ Your court hearing has been RESCHEDULED.
 
 Case ID: {case_id}
 Judge: {judge}
@@ -167,21 +94,96 @@ Judge: {judge}
 Original Date: {date}
 Original Time: {time}
 
-Status: {status}
-
-Rescheduled Hearing:
 New Date: {next_date}
 New Time: {next_time}
 
-Please be present on time.
+Status: {status}
+
+Regards,
+Court Scheduling System
+"""
+        else:
+            body = f"""
+Dear Client,
+
+✅ Your court hearing is CONFIRMED.
+
+Case ID: {case_id}
+Judge: {judge}
+
+Date: {date}
+Time: {time}
+
+Status: {status}
 
 Regards,
 Court Scheduling System
 """
 
+    elif language.lower() == "telugu":
+        body = f"""
+ప్రియమైన వినియోగదారుడు,
+
+కేసు ఐడి: {case_id}
+న్యాయమూర్తి: {judge}
+
+తేదీ: {date}
+సమయం: {time}
+
+స్థితి: {status}
+
+తదుపరి తేదీ: {next_date}
+తదుపరి సమయం: {next_time}
+"""
+
+    elif language.lower() == "hindi":
+        body = f"""
+प्रिय ग्राहक,
+
+केस आईडी: {case_id}
+जज: {judge}
+
+तारीख: {date}
+समय: {time}
+
+स्थिति: {status}
+
+अगली तारीख: {next_date}
+अगला समय: {next_time}
+"""
+
+    elif language.lower() == "kannada":
+        body = f"""
+ಪ್ರಿಯ ಗ್ರಾಹಕರೇ,
+
+ಕೇಸ್ ಐಡಿ: {case_id}
+ನ್ಯಾಯಾಧೀಶರು: {judge}
+
+ದಿನಾಂಕ: {date}
+ಸಮಯ: {time}
+
+ಸ್ಥಿತಿ: {status}
+
+ಮುಂದಿನ ದಿನಾಂಕ: {next_date}
+ಮುಂದಿನ ಸಮಯ: {next_time}
+"""
+
+    else:
+        body = f"""
+Court Hearing Notification
+
+Case ID: {case_id}
+Judge: {judge}
+
+Date: {date}
+Time: {time}
+
+Status: {status}
+"""
+
     msg = MIMEText(body)
     msg["Subject"] = subject
-    msg["From"] = "Ktejasvitha26@gmail.com"
+    msg["From"] = "your_email@gmail.com"
     msg["To"] = to_email
 
     server = smtplib.SMTP("smtp.gmail.com", 587)
@@ -191,7 +193,7 @@ Court Scheduling System
     server.quit()
 
 
-@app.route("/", methods=["GET","POST"])
+@app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         if request.form["username"] == "admin" and request.form["password"] == "1234":
@@ -218,11 +220,26 @@ def dashboard():
     hearings = cur.fetchall()
     db.close()
 
-    msg = request.args.get("msg")
+    msg = session.pop("msg", None)
     return render_template("dashboard.html", hearings=hearings, msg=msg)
 
 
-@app.route("/add_case", methods=["GET","POST"])
+@app.route("/delete/<int:id>")
+def delete(id):
+    if "user" not in session:
+        return redirect("/")
+
+    db = get_db()
+    cur = db.cursor()
+    cur.execute("DELETE FROM hearings WHERE id=?", (id,))
+    db.commit()
+    db.close()
+
+    session["msg"] = "Deleted successfully"
+    return redirect("/dashboard")
+
+
+@app.route("/add_case", methods=["GET", "POST"])
 def add_case():
     if "user" not in session:
         return redirect("/")
@@ -249,12 +266,13 @@ def add_case():
         db.commit()
         db.close()
 
-        return redirect("/dashboard?msg=case_added")
+        session["msg"] = "Case added successfully"
+        return redirect("/dashboard")
 
     return render_template("add_case.html")
 
 
-@app.route("/schedule", methods=["GET","POST"])
+@app.route("/schedule", methods=["GET", "POST"])
 def schedule():
     if "user" not in session:
         return redirect("/")
@@ -295,7 +313,8 @@ def schedule():
         judge = request.form["judge"]
 
         cur.execute("""
-        INSERT INTO hearings(case_id,judge,hearing_date,hearing_time,status,next_date,next_time)
+        INSERT INTO hearings(case_id, judge, hearing_date,
+        hearing_time, status, next_date, next_time)
         VALUES(?,?,?,?,?,?,?)
         """, (
             case_id,
@@ -310,11 +329,11 @@ def schedule():
         db.commit()
         db.close()
 
-        # SEND EMAILS
         send_email(lawyer_email, case_id, judge, date, time, status, next_date, next_time, language)
         send_email(client_email, case_id, judge, date, time, status, next_date, next_time, language)
 
-        return redirect("/dashboard?msg=hearing_scheduled")
+        session["msg"] = "Hearing scheduled & Email sent successfully"
+        return redirect("/dashboard")
 
     return render_template("schedule.html")
 
