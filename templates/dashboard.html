@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dashboard</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Court Hearing Dashboard</h2>
+
+<!-- TOP BAR -->
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+
+    <div>
+        <a href="/add_case">Add Case</a>
+        <a href="/schedule">Schedule Hearing</a>
+    </div>
+
+    <div>
+        <a href="/logout">Logout</a>
+    </div>
+
+</div>
+
+<!-- SUCCESS MESSAGE -->
+{% if msg %}
+<p style="color:green; font-size:18px;">
+    {% if "case_added" in msg %}
+        ✅ Case Added Successfully
+    {% elif "hearing_scheduled" in msg %}
+        ✅ Hearing Scheduled & Email Sent Successfully
+    {% endif %}
+</p>
+{% endif %}
+
+<!-- TABLE -->
+<table>
+<tr>
+<th>ID</th>
+<th>Case</th>
+<th>Judge</th>
+<th>Date</th>
+<th>Time</th>
+<th>Status</th>
+<th>Next Date</th>
+<th>Next Time</th>
+</tr>
+
+{% for h in hearings %}
+<tr>
+<td>{{h[0]}}</td>
+<td>{{h[1]}}</td>
+<td>{{h[2]}}</td>
+<td>{{h[3]}}</td>
+<td>{{h[4]}}</td>
+<td>{{h[5]}}</td>
+<td>{{h[6]}}</td>
+<td>{{h[7]}}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</div>
+
+</body>
+</html>

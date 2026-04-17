@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Schedule Hearing</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="form-center">
+<div class="form-box">
+
+<h2>Schedule Hearing</h2>
+
+<form method="post">
+<input name="case_id" placeholder="Case ID"><br><br>
+<input name="judge" placeholder="Judge"><br><br>
+<input type="date" name="date"><br><br>
+<input type="time" name="time"><br><br>
+
+<button>Schedule</button>
+</form>
+
+</div>
+</div>
+
+</body>
+</html>

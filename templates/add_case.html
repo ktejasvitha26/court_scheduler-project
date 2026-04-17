@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Add Case</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="form-center">
+<div class="form-box">
+
+<h2>Add Case</h2>
+
+<form method="post">
+<input name="case_id" placeholder="Case ID"><br><br>
+<input name="case_type" placeholder="Case Type"><br><br>
+<input name="lawyer_email" placeholder="Lawyer Email"><br><br>
+<input name="client_email" placeholder="Client Email"><br><br>
+
+<select name="language">
+<option>English</option>
+<option>Hindi</option>
+<option>Kannada</option>
+<option>Telugu</option>
+<option>Tamil</option>
+</select><br><br>
+
+<button>Add Case</button>
+</form>
+
+</div>
+</div>
+
+</body>
+</html>
