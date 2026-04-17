@@ -7,7 +7,7 @@ import random   # ✅ ADDED
 
 app = Flask(__name__)
 app.secret_key = "secret_key"
-
+   
 
 def get_db():
     return sqlite3.connect("database.db")
@@ -42,7 +42,7 @@ def create_tables():
 
     db.commit()
     db.close()
-
+create_tables()
 
 # ✅ AI-LIKE PREDICTION
 def predict_delay(case_type, total):
