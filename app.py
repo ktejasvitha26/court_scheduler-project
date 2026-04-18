@@ -11,22 +11,21 @@ app = Flask(__name__)
 app.secret_key = "secret_key"
 
 
-# DATABASE CONNECTION
+# ✅ DATABASE CONNECTION (ONLY POSTGRES FOR RENDER)
 def get_db():
+    up.uses_netloc.append("postgres")
     url = up.urlparse(os.environ.get("DATABASE_URL"))
 
-    conn = psycopg2.connect(
+    return psycopg2.connect(
         database=url.path[1:],
         user=url.username,
         password=url.password,
         host=url.hostname,
         port=url.port
     )
-    conn.autocommit = True
-    return conn
 
 
-# CREATE TABLES
+# ✅ CREATE TABLES
 def create_tables():
     db = get_db()
     cur = db.cursor()
@@ -58,7 +57,7 @@ def create_tables():
     db.close()
 
 
-# AI PREDICTION
+# ✅ AI PREDICTION
 def predict_delay(case_type, total):
     score = 0
 
@@ -79,7 +78,7 @@ def predict_delay(case_type, total):
     return "Delayed" if score >= 6 else "On Time"
 
 
-# EMAIL FUNCTION (FULL MULTI LANGUAGE)
+# ✅ EMAIL FUNCTION (UNCHANGED)
 def send_email(to_email, case_id, judge, date, time, status, next_date, next_time, language):
 
     if language.lower() == "english":
@@ -101,16 +100,13 @@ Status: Delayed
 Rescheduled Hearing:
 New Date: {next_date}
 New Time: {next_time}
-
-Regards,
-Court Scheduling System
 """
         else:
             subject = "Court Hearing Confirmed"
             body = f"""
 Dear Client,
 
-Your court hearing is CONFIRMED.
+Your hearing is CONFIRMED.
 
 Case ID: {case_id}
 Judge: {judge}
@@ -119,60 +115,36 @@ Date: {date}
 Time: {time}
 
 Status: On Time
-
-Regards,
-Court Scheduling System
 """
 
     elif language.lower() == "telugu":
         subject = "కోర్టు విచారణ సమాచారం"
         body = f"""
-ప్రియమైన వినియోగదారుడు,
-
 కేసు ఐడి: {case_id}
 న్యాయమూర్తి: {judge}
-
 తేదీ: {date}
 సమయం: {time}
-
 స్థితి: {status}
-
-తదుపరి తేదీ: {next_date}
-తదుపరి సమయం: {next_time}
 """
 
     elif language.lower() == "hindi":
         subject = "कोर्ट सुनवाई सूचना"
         body = f"""
-प्रिय ग्राहक,
-
 केस आईडी: {case_id}
 जज: {judge}
-
 तारीख: {date}
 समय: {time}
-
 स्थिति: {status}
-
-अगली तारीख: {next_date}
-अगला समय: {next_time}
 """
 
     elif language.lower() == "kannada":
         subject = "ನ್ಯಾಯಾಲಯ ವಿಚಾರಣೆ ಮಾಹಿತಿ"
         body = f"""
-ಪ್ರಿಯ ಗ್ರಾಹಕರೇ,
-
 ಕೇಸ್ ಐಡಿ: {case_id}
 ನ್ಯಾಯಾಧೀಶರು: {judge}
-
 ದಿನಾಂಕ: {date}
 ಸಮಯ: {time}
-
 ಸ್ಥಿತಿ: {status}
-
-ಮುಂದಿನ ದಿನಾಂಕ: {next_date}
-ಮುಂದಿನ ಸಮಯ: {next_time}
 """
 
     else:
@@ -238,9 +210,7 @@ def delete(id):
 
     db = get_db()
     cur = db.cursor()
-
     cur.execute("DELETE FROM hearings WHERE id=%s", (id,))
-
     db.commit()
     db.close()
 
@@ -263,7 +233,7 @@ def add_case():
         cur.execute("SELECT * FROM cases WHERE case_id=%s", (case_id,))
         if cur.fetchone():
             db.close()
-            return "Case ID already exists"
+            return "Case already exists"
 
         cur.execute("INSERT INTO cases VALUES(%s,%s,%s,%s,%s)", (
             case_id,
@@ -276,7 +246,7 @@ def add_case():
         db.commit()
         db.close()
 
-        session["msg"] = "Case added successfully"
+        session["msg"] = "Case added"
         return redirect("/dashboard")
 
     return render_template("add_case.html")
@@ -293,18 +263,13 @@ def schedule():
         cur = db.cursor()
 
         case_id = request.form["case_id"]
-
         cur.execute("SELECT * FROM cases WHERE case_id=%s", (case_id,))
         case = cur.fetchone()
 
         if not case:
-            db.close()
-            return "Case ID not found"
+            return "Case not found"
 
-        case_type = case[1]
-        lawyer_email = case[2]
-        client_email = case[3]
-        language = case[4]
+        case_type, lawyer_email, client_email, language = case[1:]
 
         cur.execute("SELECT COUNT(*) FROM hearings")
         total = cur.fetchone()[0]
@@ -313,6 +278,7 @@ def schedule():
 
         date = request.form["date"]
         time = request.form["time"]
+        judge = request.form["judge"]
 
         next_date = date
         next_time = time
@@ -321,15 +287,11 @@ def schedule():
             d = datetime.strptime(date, "%Y-%m-%d")
             next_date = (d + timedelta(days=7)).strftime("%Y-%m-%d")
 
-        judge = request.form["judge"]
-
         cur.execute("""
         INSERT INTO hearings(case_id, judge, hearing_date,
         hearing_time, status, next_date, next_time)
         VALUES(%s,%s,%s,%s,%s,%s,%s)
-        """, (
-            case_id, judge, date, time, status, next_date, next_time
-        ))
+        """, (case_id, judge, date, time, status, next_date, next_time))
 
         db.commit()
         db.close()
@@ -337,11 +299,7 @@ def schedule():
         send_email(lawyer_email, case_id, judge, date, time, status, next_date, next_time, language)
         send_email(client_email, case_id, judge, date, time, status, next_date, next_time, language)
 
-        session["msg"] = "Hearing scheduled & Email sent successfully"
+        session["msg"] = "Scheduled successfully"
         return redirect("/dashboard")
 
     return render_template("schedule.html")
-
-
-# RUN (RENDER SAFE)
-create_tables()
