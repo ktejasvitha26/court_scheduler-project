@@ -11,75 +11,54 @@ app = Flask(__name__)
 app.secret_key = "secret_key"
 
 
-# ✅ DATABASE CONNECTION (AUTO SWITCH)
+# DATABASE CONNECTION
 def get_db():
-        url = up.urlparse(os.environ.get("DATABASE_URL"))
+    url = up.urlparse(os.environ.get("DATABASE_URL"))
 
-        conn = psycopg2.connect(
-            database=url.path[1:],
-            user=url.username,
-            password=url.password,
-            host=url.hostname,
-            port=url.port
-        ) 
-        conn.autocommit = True
-        return conn   
+    conn = psycopg2.connect(
+        database=url.path[1:],
+        user=url.username,
+        password=url.password,
+        host=url.hostname,
+        port=url.port
+    )
+    conn.autocommit = True
+    return conn
 
 
-# ✅ CREATE TABLES
+# CREATE TABLES
 def create_tables():
-        db = get_db()
-        cur = db.cursor()
-   
-        cur.execute("""
-        CREATE TABLE IF NOT EXISTS cases(
-             case_id TEXT PRIMARY KEY,
-             case_type TEXT,
-             lawyer_email TEXT,
-             client_email TEXT,
-             language TEXT
-        )
-        """)
-        cur.execute("""
-        CREATE TABLE IF NOT EXISTS hearings(
-            id SERIAL PRIMARY KEY,
-            case_id TEXT,
-            judge TEXT,
-            hearing_date TEXT,
-            hearing_time TEXT,
-            status TEXT,
-            next_date TEXT,
-            next_time TEXT
-        )
-        """)
+    db = get_db()
+    cur = db.cursor()
 
-        cur.execute("""
-        CREATE TABLE IF NOT EXISTS cases(
-            case_id TEXT PRIMARY KEY,
-            case_type TEXT,
-            lawyer_email TEXT,
-            client_email TEXT,
-            language TEXT
-        )
-        """)
-        cur.execute("""
-        CREATE TABLE IF NOT EXISTS hearings(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            case_id TEXT,
-            judge TEXT,
-            hearing_date TEXT,
-            hearing_time TEXT,
-            status TEXT,
-            next_date TEXT,
-            next_time TEXT
-        )
-        """)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS cases(
+        case_id TEXT PRIMARY KEY,
+        case_type TEXT,
+        lawyer_email TEXT,
+        client_email TEXT,
+        language TEXT
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS hearings(
+        id SERIAL PRIMARY KEY,
+        case_id TEXT,
+        judge TEXT,
+        hearing_date TEXT,
+        hearing_time TEXT,
+        status TEXT,
+        next_date TEXT,
+        next_time TEXT
+    )
+    """)
 
     db.commit()
     db.close()
 
 
-# ✅ AI PREDICTION
+# AI PREDICTION
 def predict_delay(case_type, total):
     score = 0
 
@@ -100,7 +79,7 @@ def predict_delay(case_type, total):
     return "Delayed" if score >= 6 else "On Time"
 
 
-# ✅ EMAIL FUNCTION
+# EMAIL FUNCTION (FULL MULTI LANGUAGE)
 def send_email(to_email, case_id, judge, date, time, status, next_date, next_time, language):
 
     if language.lower() == "english":
@@ -222,7 +201,7 @@ Status: {status}
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        if request.form["username"] == "admin" and request.form["password"] == "1234":
+        if request.form["username"] == "court_ai_system" and request.form["password"] == "AI@Court9900":
             session["user"] = "admin"
             return redirect("/dashboard")
         return "Invalid Login"
@@ -260,10 +239,7 @@ def delete(id):
     db = get_db()
     cur = db.cursor()
 
-    if os.environ.get("DATABASE_URL"):
-        cur.execute("DELETE FROM hearings WHERE id=%s", (id,))
-    else:
-        cur.execute("DELETE FROM hearings WHERE id=?", (id,))
+    cur.execute("DELETE FROM hearings WHERE id=%s", (id,))
 
     db.commit()
     db.close()
@@ -284,31 +260,18 @@ def add_case():
 
         case_id = request.form["case_id"]
 
-        if os.environ.get("DATABASE_URL"):
-            cur.execute("SELECT * FROM cases WHERE case_id=%s", (case_id,))
-        else:
-            cur.execute("SELECT * FROM cases WHERE case_id=?", (case_id,))
-
+        cur.execute("SELECT * FROM cases WHERE case_id=%s", (case_id,))
         if cur.fetchone():
             db.close()
             return "Case ID already exists"
 
-        if os.environ.get("DATABASE_URL"):
-            cur.execute("INSERT INTO cases VALUES(%s,%s,%s,%s,%s)", (
-                case_id,
-                request.form["case_type"],
-                request.form["lawyer_email"],
-                request.form["client_email"],
-                request.form["language"]
-            ))
-        else:
-            cur.execute("INSERT INTO cases VALUES(?,?,?,?,?)", (
-                case_id,
-                request.form["case_type"],
-                request.form["lawyer_email"],
-                request.form["client_email"],
-                request.form["language"]
-            ))
+        cur.execute("INSERT INTO cases VALUES(%s,%s,%s,%s,%s)", (
+            case_id,
+            request.form["case_type"],
+            request.form["lawyer_email"],
+            request.form["client_email"],
+            request.form["language"]
+        ))
 
         db.commit()
         db.close()
@@ -331,11 +294,7 @@ def schedule():
 
         case_id = request.form["case_id"]
 
-        if os.environ.get("DATABASE_URL"):
-            cur.execute("SELECT * FROM cases WHERE case_id=%s", (case_id,))
-        else:
-            cur.execute("SELECT * FROM cases WHERE case_id=?", (case_id,))
-
+        cur.execute("SELECT * FROM cases WHERE case_id=%s", (case_id,))
         case = cur.fetchone()
 
         if not case:
@@ -364,22 +323,13 @@ def schedule():
 
         judge = request.form["judge"]
 
-        if os.environ.get("DATABASE_URL"):
-            cur.execute("""
-            INSERT INTO hearings(case_id, judge, hearing_date,
-            hearing_time, status, next_date, next_time)
-            VALUES(%s,%s,%s,%s,%s,%s,%s)
-            """, (
-                case_id, judge, date, time, status, next_date, next_time
-            ))
-        else:
-            cur.execute("""
-            INSERT INTO hearings(case_id, judge, hearing_date,
-            hearing_time, status, next_date, next_time)
-            VALUES(?,?,?,?,?,?,?)
-            """, (
-                case_id, judge, date, time, status, next_date, next_time
-            ))
+        cur.execute("""
+        INSERT INTO hearings(case_id, judge, hearing_date,
+        hearing_time, status, next_date, next_time)
+        VALUES(%s,%s,%s,%s,%s,%s,%s)
+        """, (
+            case_id, judge, date, time, status, next_date, next_time
+        ))
 
         db.commit()
         db.close()
@@ -393,7 +343,5 @@ def schedule():
     return render_template("schedule.html")
 
 
-# RUN
-
-if __name__ == "__main__":
-    create_tables()
+# RUN (RENDER SAFE)
+create_tables()
