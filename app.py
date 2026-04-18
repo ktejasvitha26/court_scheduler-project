@@ -281,7 +281,7 @@ def add_case():
         db.commit()
         db.close()
 
-        session["msg"] = "Case added"
+        session["msg"] = "Case added successfully"
         return redirect("/dashboard")
 
     return render_template("add_case.html")
@@ -334,7 +334,7 @@ def schedule():
         send_email(lawyer_email, case_id, judge, date, time, status, next_date, next_time, language)
         send_email(client_email, case_id, judge, date, time, status, next_date, next_time, language)
 
-        session["msg"] = "Scheduled successfully"
+        session["msg"] = "Hearing scheduled and Email sent successfully"
         return redirect("/dashboard")
 
     return render_template("schedule.html")
