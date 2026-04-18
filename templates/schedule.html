@@ -1,27 +1,81 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Schedule Hearing</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Schedule Hearing</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+        }
+
+        .form-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 320px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
 </head>
 
 <body>
 
 <div class="form-center">
-<div class="form-box">
+    <div class="form-box">
 
-<h2>Schedule Hearing</h2>
+        <h2>Schedule Hearing</h2>
 
-<form method="post">
-<input name="case_id" placeholder="Case ID"><br><br>
-<input name="judge" placeholder="Judge"><br><br>
-<input type="date" name="date"><br><br>
-<input type="time" name="time"><br><br>
+        <form method="post">
 
-<button>Schedule</button>
-</form>
+            <input name="case_id" placeholder="Case ID" required>
 
-</div>
+            <input name="judge" placeholder="Judge Name" required>
+
+            <input type="date" name="date" required>
+
+            <input type="time" name="time" required>
+
+            <button type="submit">Schedule</button>
+
+        </form>
+
+    </div>
 </div>
 
 </body>
