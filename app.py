@@ -28,16 +28,16 @@ def get_db():
 
 # ✅ CREATE TABLES
 def create_tables():
-    db = get_db()
-    cur = db.cursor()
+        db = get_db()
+        cur = db.cursor()
    
         cur.execute("""
         CREATE TABLE IF NOT EXISTS cases(
-            case_id TEXT PRIMARY KEY,
-            case_type TEXT,
-            lawyer_email TEXT,
-            client_email TEXT,
-            language TEXT
+             case_id TEXT PRIMARY KEY,
+             case_type TEXT,
+             lawyer_email TEXT,
+             client_email TEXT,
+             language TEXT
         )
         """)
         cur.execute("""
