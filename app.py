@@ -52,7 +52,7 @@ def create_tables():
             next_time TEXT
         )
         """)
-    else:
+
         cur.execute("""
         CREATE TABLE IF NOT EXISTS cases(
             case_id TEXT PRIMARY KEY,
