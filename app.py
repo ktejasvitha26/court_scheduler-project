@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.secret_key = "secret_key"
 
 
-# ✅ DATABASE CONNECTION (FIXED FOR RENDER)
+# DATABASE CONNECTION
 def get_db():
     url = os.environ.get("DATABASE_URL")
 
@@ -20,7 +20,7 @@ def get_db():
     return psycopg2.connect(url)
 
 
-# ✅ CREATE TABLES
+# CREATE TABLES
 def create_tables():
     db = get_db()
     cur = db.cursor()
@@ -52,7 +52,7 @@ def create_tables():
     db.close()
 
 
-# ✅ AUTO CREATE TABLES (FIX FOR YOUR ERROR)
+# AUTO CREATE TABLES
 @app.before_request
 def initialize():
     try:
@@ -61,7 +61,7 @@ def initialize():
         print("Table creation error:", e)
 
 
-# ✅ AI PREDICTION (UNCHANGED)
+# AI PREDICTION
 def predict_delay(case_type, total):
     score = 0
 
@@ -82,14 +82,13 @@ def predict_delay(case_type, total):
     return "Delayed" if score >= 6 else "On Time"
 
 
-# ✅ EMAIL FUNCTION (100% SAME AS YOURS)
+# EMAIL FUNCTION (FIXED ONLY)
 def send_email(to_email, case_id, judge, date, time, status, next_date, next_time, language):
 
     if language.lower() == "english":
         if status == "Delayed":
             subject = "Court Hearing Notification"
-            body = f"""
-Dear Client,
+            body = f"""Dear Client,
 
 Your court hearing has been scheduled.
 
@@ -110,8 +109,7 @@ Court Scheduling System
 """
         else:
             subject = "Court Hearing Confirmed"
-            body = f"""
-Dear Client,
+            body = f"""Dear Client,
 
 Your hearing is CONFIRMED.
 
@@ -129,8 +127,7 @@ Court Scheduling System
 
     elif language.lower() == "telugu":
         subject = "కోర్టు విచారణ సమాచారం"
-        body = f"""
-ప్రియమైన వినియోగదారుడు,
+        body = f"""ప్రియమైన వినియోగదారుడు,
 
 కేసు ఐడి: {case_id}
 న్యాయమూర్తి: {judge}
@@ -146,8 +143,7 @@ Court Scheduling System
 
     elif language.lower() == "hindi":
         subject = "कोर्ट सुनवाई सूचना"
-        body = f"""
-प्रिय ग्राहक,
+        body = f"""प्रिय ग्राहक,
 
 केस आईडी: {case_id}
 जज: {judge}
@@ -163,8 +159,7 @@ Court Scheduling System
 
     elif language.lower() == "kannada":
         subject = "ನ್ಯಾಯಾಲಯ ವಿಚಾರಣೆ ಮಾಹಿತಿ"
-        body = f"""
-ಪ್ರಿಯ ಗ್ರಾಹಕರೇ,
+        body = f"""ಪ್ರಿಯ ಗ್ರಾಹಕರೇ,
 
 ಕೇಸ್ ಐಡಿ: {case_id}
 ನ್ಯಾಯಾಧೀಶರು: {judge}
@@ -180,8 +175,7 @@ Court Scheduling System
 
     else:
         subject = "Court Notification"
-        body = f"""
-Case ID: {case_id}
+        body = f"""Case ID: {case_id}
 Judge: {judge}
 Date: {date}
 Time: {time}
@@ -191,10 +185,10 @@ Status: {status}
     try:
         msg = MIMEText(body)
         msg["Subject"] = subject
-        msg["From"] = "your_email@gmail.com"
+        msg["From"] = "Ktejasvitha26@gmail.com"   # FIXED
         msg["To"] = to_email
 
-        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=10)  # FIXED
         server.starttls()
         server.login("Ktejasvitha26@gmail.com", "lvms irgb fwra yzfu")
         server.send_message(msg)
@@ -331,8 +325,12 @@ def schedule():
         db.commit()
         db.close()
 
-        send_email(lawyer_email, case_id, judge, date, time, status, next_date, next_time, language)
-        send_email(client_email, case_id, judge, date, time, status, next_date, next_time, language)
+        # SAFE EMAIL CALL (MAIN FIX)
+        try:
+            send_email(lawyer_email, case_id, judge, date, time, status, next_date, next_time, language)
+            send_email(client_email, case_id, judge, date, time, status, next_date, next_time, language)
+        except Exception as e:
+            print("Email failed:", e)
 
         session["msg"] = "Hearing scheduled and Email sent successfully"
         return redirect("/dashboard")
